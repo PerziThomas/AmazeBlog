@@ -2,6 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import Database from "./database/util/db-connector.js";
 import accountRouter from "./routers/account-router.js";
+import checkUserByJWT from "./security/authorization.js";
+import handleError from "./error/error-handling.js";
 
 dotenv.config();
 
@@ -14,19 +16,19 @@ async function main() {
     await Database.connect();
 
     app.use(express.json());
-
-    app.get("/", (req, res) => {
-        res.send("Hello World! I am running Express!");
-    });
+    registerRouters();
     
     app.listen(PORT, HOST, () => {
-        registerRouters();
         console.log(`Express Server running and listening on http://${HOST}:${PORT}`);
     });
 }
 
 async function registerRouters() {
+
+    app.use(checkUserByJWT);
     app.use("/api/accounts", accountRouter);
+
+    app.use(handleError);
 }
 
 main();
